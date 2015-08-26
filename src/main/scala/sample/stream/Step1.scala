@@ -63,22 +63,21 @@ class ComputeCvStage extends FlexiMerge[(String, BigDecimal), MvAdjMergeShape[(S
     val readElement: State[(String, BigDecimal)] = State[(String, BigDecimal)](ReadAny(p.mv, p.adj)) { (ctx, input, element) =>
       input match {
         case p.mv => {
+          println("Got an MV " + element)
           mvMap.put(element._1, element._2)
-          adjMap.getOrElse(element._1, 0)
           ctx.emit((element._1, element._2 + adjMap.getOrElse(element._1, 0)))
         }
         case p.adj => {
+          println("Got an Adj" + element)
           adjMap.put(element._1, element._2)
-          mvMap.getOrElse(element._1, 0)
           ctx.emit((element._1, element._2 + mvMap.getOrElse(element._1, 0)))
         }
-        case _ => ;
+        case _ => println("Error!");
       }
       SameState
     }
 
     override def initialState = readElement
 
-    override def initialCompletionHandling = eagerClose
   }
 }
